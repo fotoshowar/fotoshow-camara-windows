@@ -8,7 +8,7 @@ Para conectar la cámara: MENU → Network → Send to Smartphone
 """
 from flask import Flask, jsonify, Response, send_file, abort, request
 from xml.dom import minidom
-import subprocess, os, threading, queue, mimetypes, tempfile
+import subprocess, os, sys, threading, queue, mimetypes, tempfile
 import requests as req
 import webbrowser
 
@@ -647,6 +647,7 @@ def serve_foto(filepath):
 if __name__ == "__main__":
     os.makedirs(FOTOS_DIR, exist_ok=True)
     print(f"Las fotos se guardan en: {FOTOS_DIR}")
-    print("Abriendo navegador en http://localhost:8081 ...")
-    threading.Timer(1.5, lambda: webbrowser.open("http://localhost:8081")).start()
+    if "--no-browser" not in sys.argv:
+        print("Abriendo navegador en http://localhost:8081 ...")
+        threading.Timer(1.5, lambda: webbrowser.open("http://localhost:8081")).start()
     app.run(host="0.0.0.0", port=8081, debug=False)
