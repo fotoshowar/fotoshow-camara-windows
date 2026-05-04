@@ -27,18 +27,18 @@ wifi_config    = {"ssid": "", "password": ""}
 def wifi_scan():
     r = subprocess.run(
         ["netsh", "wlan", "show", "networks", "mode=bssid"],
-        capture_output=True, text=True, encoding="utf-8", errors="ignore"
+        capture_output=True, text=True, encoding="oem", errors="replace"
     )
     redes = []; seen = set(); ssid = None; signal = 0
     for line in r.stdout.splitlines():
         line = line.strip()
         if line.upper().startswith("SSID") and ":" in line and "BSSID" not in line.upper():
             ssid = line.split(":", 1)[1].strip()
-        elif "signal" in line.lower() or "señal" in line.lower():
+        elif ":" in line and "%" in line:
             try:
                 signal = int(line.split(":", 1)[1].strip().replace("%", ""))
             except:
-                signal = 0
+                continue
             if ssid and ssid not in seen:
                 seen.add(ssid)
                 redes.append({"ssid": ssid, "signal": signal})
@@ -72,7 +72,7 @@ def wifi_connect(ssid, password):
         subprocess.run(["netsh", "wlan", "delete", "profile", f"name={ssid}"], capture_output=True)
         subprocess.run(["netsh", "wlan", "add", "profile", f"filename={tmp.name}"], capture_output=True)
         r = subprocess.run(["netsh", "wlan", "connect", f"name={ssid}"],
-                           capture_output=True, text=True, encoding="utf-8", errors="ignore")
+                           capture_output=True, text=True, encoding="oem", errors="replace")
         return r.returncode == 0, r.stdout + r.stderr
     finally:
         os.unlink(tmp.name)
@@ -81,7 +81,7 @@ def wifi_status(ssid):
     if not ssid:
         return False
     r = subprocess.run(["netsh", "wlan", "show", "interfaces"],
-                       capture_output=True, text=True, encoding="utf-8", errors="ignore")
+                       capture_output=True, text=True, encoding="oem", errors="replace")
     return ssid.lower() in r.stdout.lower()
 
 # ── UPnP / cámara ─────────────────────────────────────────────────────────────
